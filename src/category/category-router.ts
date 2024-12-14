@@ -20,5 +20,21 @@ router.post(
     categoryValidator,
     asyncWrapper(categoryController.create),
 );
+router.get('/', asyncWrapper(categoryController.getAll));
+router.get('/:id', categoryValidator, asyncWrapper(categoryController.getById));
+router.patch(
+    '/:id',
+    authenticate,
+    canAccess([ROLES.MANAGER, ROLES.ADMIN]) as unknown as RequestHandler,
+    categoryValidator,
+    asyncWrapper(categoryController.update),
+);
+router.delete(
+    '/:id',
+    authenticate,
+    canAccess([ROLES.ADMIN]) as unknown as RequestHandler,
+    categoryValidator,
+    asyncWrapper(categoryController.delete),
+);
 
 export default router;

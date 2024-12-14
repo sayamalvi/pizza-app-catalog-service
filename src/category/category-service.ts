@@ -6,4 +6,16 @@ export class CategoryService {
         const newCategory = new CategoryModel(category);
         return newCategory.save();
     }
+    getAll() {
+        return CategoryModel.find({});
+    }
+    getById(id: string) {
+        return CategoryModel.findById(id);
+    }
+    update(id: string, category: Category) {
+        return CategoryModel.findByIdAndUpdate(id, category);
+    }
+    delete(id: string) {
+        return CategoryModel.findByIdAndDelete(id);
+    }
 }

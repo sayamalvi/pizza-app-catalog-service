@@ -1,4 +1,4 @@
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 
 export default [
     body('name')
@@ -19,8 +19,8 @@ export default [
                     `${value} is invalid attribute for priceType field. Possible values are [${validKeys.join(', ')}]`,
                 );
             }
-            return true
-            
+            return true;
         }),
     body('attributes').exists().withMessage('Attributes are required'),
+    param('id').exists().withMessage("id is required").isMongoId().withMessage('Invalid category id'),
 ];
