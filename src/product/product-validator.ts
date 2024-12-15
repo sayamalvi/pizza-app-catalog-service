@@ -1,4 +1,5 @@
 import { body, param } from 'express-validator';
+import { Request } from 'express';
 
 export default [
     body('name')
@@ -13,15 +14,18 @@ export default [
     body('attributes').exists().withMessage('attributes are required'),
     body('tenantId').exists().withMessage('tenantId are required'),
     body('categoryId').exists().withMessage('categoryId are required'),
-    body('image').custom((value, { req }) => {
-        if (!req.files) {
-            throw new Error('Image is required');
+    // body('image').custom((value, { req }) => {
+    //     if (!req.files) {
+    //         throw new Error('Image is required');
+    //     }
+    //     return true;
+    // }),
+    param('id').custom((value, { req }) => {
+        if (['PUT', 'DELETE', 'PATCH'].includes((req as Request).method)) {
+            if (!value) {
+                throw new Error('id is required');
+            }
         }
         return true;
     }),
-    param('id')
-        .exists()
-        .withMessage('id is required')
-        .isMongoId()
-        .withMessage('Invalid category id'),
 ];
