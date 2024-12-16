@@ -111,9 +111,15 @@ export class ProductController {
         const products = await this.productService.getAllProducts(
             search as string,
             filters,
-            parseInt(req.query.page as string),
-            parseInt(req.query.limit as string),
+            parseInt(req.query.page as string) || 1,
+            parseInt(req.query.limit as string) || 5,
         );
-        res.json(products);
+        const finalProducts = products.products.map((product: Product) => {
+            return {
+                ...product,
+                image: this.storage.getObjectUri(product.image),
+            };
+        });
+        res.json(finalProducts);
     };
 }

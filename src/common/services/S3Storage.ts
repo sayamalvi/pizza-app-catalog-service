@@ -41,7 +41,12 @@ export class S3Storage implements FileStorage {
     };
 
     getObjectUri(filename: string): string {
-        // Get object URI from S3
-        return `https://s3.amazonaws.com/${filename}`;
+        const bucket = config.get('s3.bucket');
+        const region = config.get('s3.region');
+        if (typeof bucket == 'string' && typeof region == 'string') {
+            return `https://${bucket}.s3.${region}.amazonaws.com/${filename}`;
+        }
+        const error = new Error('Invalid s3 config');
+        throw error;
     }
 }

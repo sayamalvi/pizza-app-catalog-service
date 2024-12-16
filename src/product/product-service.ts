@@ -20,8 +20,8 @@ export class ProductService {
     getAllProducts = async (
         search: string,
         filters: Filter,
-        page: number,
-        limit: number,
+        page: number = 1,
+        limit: number = 5,
     ) => {
         const searchQueryRegex = new RegExp(search, 'i');
         const matchQuery = {
