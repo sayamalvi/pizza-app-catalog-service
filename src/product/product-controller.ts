@@ -2,18 +2,20 @@ import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import createHttpError from 'http-errors';
 import { ProductService } from './product-service';
-import { Product } from './product-types';
+import { Filter, Product } from './product-types';
 import { FileStorage } from '../common/types/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { UploadedFile } from 'express-fileupload';
 import { AuthRequest } from '../common/types';
 import { ROLES } from '../common/enums';
+import mongoose from 'mongoose';
 
 export class ProductController {
     constructor(
         private readonly productService: ProductService,
         private readonly storage: FileStorage,
     ) {}
+    
     create = async (
         req: Request<object, unknown, Product, object>,
         res: Response,
@@ -38,6 +40,7 @@ export class ProductController {
         });
         res.status(201).json(product.id);
     };
+
     update = async (req: Request, res: Response, next: NextFunction) => {
         const _req = req as Request<object, unknown, Product, object> &
             AuthRequest;
@@ -86,5 +89,29 @@ export class ProductController {
             },
         );
         res.json({ id: updatedProduct?.id });
+    };
+
+    getAll = async (req: Request, res: Response) => {
+        const { search, tenantId, categoryId, isPublished } = req.query;
+        const filters: Filter = {};
+        if (isPublished === 'true') {
+            filters.isPublished = true;
+        }
+        if (tenantId) {
+            filters.tenantId = tenantId as string;
+        }
+        if (
+            categoryId &&
+            mongoose.Types.ObjectId.isValid(categoryId as string)
+        ) {
+            filters.categoryId = new mongoose.Types.ObjectId(
+                categoryId as string,
+            );
+        }
+        const products = await this.productService.getAllProducts(
+            search as string,
+            filters,
+        );
+        res.json(products);
     };
 }

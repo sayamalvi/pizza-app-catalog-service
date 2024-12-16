@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export interface Product {
     name: string;
     description: string;
@@ -17,4 +19,10 @@ export interface UpdateProductRequest {
 }
 export interface ProductRequest {
     body: Product;
+}
+
+export interface Filter {
+    tenantId?: string;
+    categoryId?: mongoose.Types.ObjectId;
+    isPublished?: boolean;
 }
