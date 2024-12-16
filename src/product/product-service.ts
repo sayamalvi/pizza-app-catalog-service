@@ -14,6 +14,9 @@ export class ProductService {
             { new: true },
         );
     };
+    getProduct = async (productId: string): Promise<Product | null> => {
+        return await productModel.findById({ _id: productId });
+    };
     getProductImage = async (productId: string) => {
         const product = await productModel.findById(productId);
         if (!product) {
