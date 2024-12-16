@@ -15,7 +15,7 @@ export class ProductController {
         private readonly productService: ProductService,
         private readonly storage: FileStorage,
     ) {}
-    
+
     create = async (
         req: Request<object, unknown, Product, object>,
         res: Response,
@@ -111,6 +111,8 @@ export class ProductController {
         const products = await this.productService.getAllProducts(
             search as string,
             filters,
+            parseInt(req.query.page as string),
+            parseInt(req.query.limit as string),
         );
         res.json(products);
     };

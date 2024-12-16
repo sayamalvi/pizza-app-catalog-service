@@ -17,12 +17,18 @@ export class ProductService {
     getProduct = async (productId: string): Promise<Product | null> => {
         return await productModel.findById({ _id: productId });
     };
-    getAllProducts = async (search: string, filters: Filter) => {
+    getAllProducts = async (
+        search: string,
+        filters: Filter,
+        page: number,
+        limit: number,
+    ) => {
         const searchQueryRegex = new RegExp(search, 'i');
         const matchQuery = {
             ...filters,
             name: searchQueryRegex,
         };
+        const totalProducts = await productModel.countDocuments(matchQuery);
         const aggregate = productModel.aggregate([
             {
                 $match: matchQuery,
@@ -48,8 +54,19 @@ export class ProductService {
             {
                 $unwind: '$category',
             },
+            {
+                $skip: (page - 1) * limit,
+            },
+            {
+                $limit: limit,
+            },
         ]);
         const result = await aggregate.exec();
-        return result as Product[];
+        return {
+            products: result as Product[],
+            totalProducts,
+            totalPages: Math.ceil(totalProducts / limit),
+            currentPage: page,
+        };
     };
 }
