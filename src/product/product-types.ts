@@ -9,6 +9,12 @@ export interface Product {
     isPublished: boolean;
 }
 
+export interface UpdateProductRequest {
+    body: Product;
+    params: {
+        productId: string;
+    };
+}
 export interface ProductRequest {
-    body: Product
+    body: Product;
 }

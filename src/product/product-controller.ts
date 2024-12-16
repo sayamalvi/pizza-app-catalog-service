@@ -36,4 +36,39 @@ export class ProductController {
         });
         res.status(201).json(product.id);
     };
+    update = async (
+        req: Request<object, unknown, Product, object>,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const result = validationResult(req);
+        if (!result.isEmpty()) {
+            return next(createHttpError(400, result.array()[0].msg as string));
+        }
+        let imageName: string | undefined;
+        let oldImage: string | undefined;
+        if (req.files?.image) {
+            oldImage = await this.productService.getProductImage(
+                (req.params as { productId: string }).productId,
+            );
+            const image = req.files.image as UploadedFile;
+            imageName = uuidv4();
+
+            await this.storage.upload({
+                filename: imageName,
+                fileData: image.data.buffer,
+            });
+            await this.storage.delete(oldImage as string);
+        }
+        const updatedProduct = await this.productService.updateProduct(
+            (req.params as { productId: string }).productId,
+            {
+                ...req.body,
+                priceConfiguration: JSON.parse(req.body.priceConfiguration),
+                attributes: JSON.parse(req.body.attributes),
+                image: imageName ?? (oldImage as string),
+            },
+        );
+        res.json({ id: updatedProduct?.id });
+    };
 }
