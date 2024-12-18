@@ -20,8 +20,8 @@ export class ProductService {
     getAllProducts = async (
         search: string,
         filters: Filter,
-        page: number = 1,
-        limit: number = 5,
+        perPage: number = 5,
+        currentPage: number = 1,
     ) => {
         const searchQueryRegex = new RegExp(search, 'i');
         const matchQuery = {
@@ -55,18 +55,21 @@ export class ProductService {
                 $unwind: '$category',
             },
             {
-                $skip: (page - 1) * limit,
+                $sort: { createdAt: -1 },
             },
             {
-                $limit: limit,
+                $skip: (currentPage - 1) * perPage,
+            },
+            {
+                $limit: perPage,
             },
         ]);
         const result = await aggregate.exec();
         return {
             products: result as Product[],
             totalProducts,
-            totalPages: Math.ceil(totalProducts / limit),
-            currentPage: page,
+            totalPages: Math.ceil(totalProducts / perPage),
+            currentPage,
         };
     };
 }
