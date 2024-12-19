@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { body } from 'express-validator';
 
 export default [
     body('name')
@@ -22,5 +22,4 @@ export default [
             return true;
         }),
     body('attributes').exists().withMessage('Attributes are required'),
-    param('id').exists().withMessage("id is required").isMongoId().withMessage('Invalid category id'),
 ];

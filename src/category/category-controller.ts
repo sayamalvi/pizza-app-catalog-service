@@ -1,21 +1,31 @@
 import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import createHttpError from 'http-errors';
-import { Category } from './category-types';
 import { CategoryService } from './category-service';
 import { Logger } from 'winston';
+import {
+    CreateCategoryRequest,
+    DeleteCategoryRequest,
+    GetCategoryByIdRequest,
+    UpdateCategoryRequest,
+} from './category-types';
 
 export class CategoryController {
     constructor(
         private readonly categoryService: CategoryService,
         private logger: Logger,
     ) {}
-    create = async (req: Request, res: Response, next: NextFunction) => {
+    
+    create = async (
+        req: CreateCategoryRequest,
+        res: Response,
+        next: NextFunction,
+    ) => {
         const result = validationResult(req);
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
-        const { name, priceConfiguration, attributes } = req.body as Category;
+        const { name, priceConfiguration, attributes } = req.body;
         const category = await this.categoryService.create({
             name,
             priceConfiguration,
@@ -30,8 +40,12 @@ export class CategoryController {
         res.json(categories);
     };
 
-    getById = async (req: Request, res: Response, next: NextFunction) => {
-        const id = req.params.id;
+    getById = async (
+        req: GetCategoryByIdRequest,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { id } = req.params;
         const category = await this.categoryService.getById(id);
         if (!category) {
             return next(createHttpError(404, 'Category not found'));
@@ -39,13 +53,17 @@ export class CategoryController {
         res.json(category);
     };
 
-    update = async (req: Request, res: Response, next: NextFunction) => {
-        const id = req.params.id;
+    update = async (
+        req: UpdateCategoryRequest,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { id } = req.params;
         const result = validationResult(req);
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
-        const { name, priceConfiguration, attributes } = req.body as Category;
+        const { name, priceConfiguration, attributes } = req.body;
         const category = await this.categoryService.update(id, {
             name,
             priceConfiguration,
@@ -55,10 +73,15 @@ export class CategoryController {
             return next(createHttpError(404, 'Category not found'));
         }
         this.logger.info('Category updated:', { id });
-        res.json(category);
+        res.json({ message: 'Category Updated', id: category._id });
     };
-    delete = async (req: Request, res: Response, next: NextFunction) => {
-        const id = req.params.id;
+
+    delete = async (
+        req: DeleteCategoryRequest,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { id } = req.params;
         const category = await this.categoryService.delete(id);
         if (!category) {
             return next(createHttpError(404, 'Category not found'));
