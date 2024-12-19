@@ -2,11 +2,16 @@ import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import createHttpError from 'http-errors';
 import { ProductService } from './product-service';
-import { Filter, Product } from './product-types';
+import {
+    CreateProductRequest,
+    DeleteProductRequest,
+    Filter,
+    GetSingleProductRequest,
+    Product,
+    UpdateProductRequest,
+} from './product-types';
 import { FileStorage } from '../common/types/storage';
 import { v4 as uuidv4 } from 'uuid';
-import { UploadedFile } from 'express-fileupload';
-import { AuthRequest } from '../common/types';
 import { ROLES } from '../common/enums';
 import mongoose from 'mongoose';
 
@@ -17,7 +22,7 @@ export class ProductController {
     ) {}
 
     create = async (
-        req: Request<object, unknown, Product, object>,
+        req: CreateProductRequest,
         res: Response,
         next: NextFunction,
     ) => {
@@ -25,12 +30,12 @@ export class ProductController {
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
-        const image = req.files!.image as UploadedFile;
+        const image = req.files.image;
         const imageName = uuidv4();
 
         await this.storage.upload({
             filename: imageName,
-            fileData: image.data.buffer,
+            fileData: image?.data?.buffer as ArrayBuffer,
         });
         const product = await this.productService.createProduct({
             ...req.body,
@@ -38,39 +43,30 @@ export class ProductController {
             attributes: JSON.parse(req.body.attributes),
             image: imageName,
         });
-        res.status(201).json(product.id);
+        res.status(201).json({ id: product.id });
     };
 
-    update = async (req: Request, res: Response, next: NextFunction) => {
-        const _req = req as Request<object, unknown, Product, object> &
-            AuthRequest;
-        const result = validationResult(_req);
+    update = async (
+        req: UpdateProductRequest,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const result = validationResult(req);
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
 
-        const productId = (_req.params as { productId: string }).productId;
+        const { productId } = req.params;
         const product = await this.productService.getProduct(productId);
         if (!product) {
             return next(createHttpError(404, 'Product not found'));
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-        if (_req.auth.role !== ROLES.ADMIN) {
-            const tenantId = _req.auth.tenant;
-            if (product.tenantId != tenantId) {
-                return next(
-                    createHttpError(
-                        403,
-                        'You are not allowed to update this product',
-                    ),
-                );
-            }
-        }
+
         let imageName: string | undefined;
         let oldImage: string | undefined;
         if (req.files?.image) {
             oldImage = product.image;
-            const image = req.files.image as UploadedFile;
+            const image = req.files.image;
             imageName = uuidv4();
 
             await this.storage.upload({
@@ -82,9 +78,9 @@ export class ProductController {
         const updatedProduct = await this.productService.updateProduct(
             productId,
             {
-                ..._req.body,
-                priceConfiguration: JSON.parse(_req.body.priceConfiguration),
-                attributes: JSON.parse(_req.body.attributes),
+                ...req.body,
+                priceConfiguration: JSON.parse(req.body.priceConfiguration),
+                attributes: JSON.parse(req.body.attributes),
                 image: imageName ?? (oldImage as string),
             },
         );
@@ -130,5 +126,47 @@ export class ProductController {
                 },
             },
         });
+    };
+
+    getById = async (
+        req: GetSingleProductRequest,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { productId } = req.params;
+        const product = await this.productService.getProduct(productId);
+        if (!product) {
+            return next(createHttpError(404, 'Product not found'));
+        }
+        res.json({
+            product,
+        });
+    };
+
+    delete = async (
+        req: DeleteProductRequest,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const { productId } = req.params;
+        const product = await this.productService.getProduct(productId);
+        if (!product) {
+            return next(createHttpError(404, 'Product not found'));
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+        if (req.auth.role !== ROLES.ADMIN) {
+            const tenantId = req.auth.tenant;
+            if (product.tenantId != tenantId) {
+                return next(
+                    createHttpError(
+                        403,
+                        'You are not allowed to delete this product',
+                    ),
+                );
+            }
+        }
+        await this.storage.delete(product.image);
+        await this.productService.deleteProduct(productId);
+        res.sendStatus(204);
     };
 }

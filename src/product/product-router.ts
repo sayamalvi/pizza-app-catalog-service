@@ -1,4 +1,4 @@
-import express, { RequestHandler } from 'express';
+import express from 'express';
 import authenticate from '../common/middlewares/authenticate';
 import { canAccess } from '../common/middlewares/canAccess';
 import { ROLES } from '../common/enums';
@@ -19,7 +19,7 @@ const productController = new ProductController(productService, s3Storage);
 router.post(
     '/',
     authenticate,
-    canAccess([ROLES.ADMIN, ROLES.MANAGER]) as unknown as RequestHandler,
+    canAccess([ROLES.ADMIN, ROLES.MANAGER]),
     fileUpload({
         limits: { fileSize: 50 * 1024 * 1024 },
         abortOnLimit: true,
@@ -30,10 +30,11 @@ router.post(
     createProductValidator,
     asyncWrapper(productController.create),
 );
+
 router.patch(
     '/:productId',
     authenticate,
-    canAccess([ROLES.ADMIN, ROLES.MANAGER]) as unknown as RequestHandler,
+    canAccess([ROLES.ADMIN, ROLES.MANAGER]),
     fileUpload({
         limits: { fileSize: 50 * 1024 * 1024 },
         abortOnLimit: true,
@@ -44,6 +45,15 @@ router.patch(
     updateProductValidator,
     asyncWrapper(productController.update),
 );
+
 router.get('/', asyncWrapper(productController.getAll));
 
+router.get('/:productId', asyncWrapper(productController.getById));
+
+router.delete(
+    '/:productId',
+    authenticate,
+    canAccess([ROLES.ADMIN, ROLES.MANAGER]),
+    asyncWrapper(productController.delete),
+);
 export default router;

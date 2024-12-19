@@ -6,7 +6,7 @@ const attributeValueSchema = new mongoose.Schema({
 });
 const priceConfigurationSchema = new mongoose.Schema({
     priceType: { type: String, enum: ['base', 'additional'] },
-    avaliableOptions: {
+    availableOptions: {
         type: Map,
         of: Number,
     },

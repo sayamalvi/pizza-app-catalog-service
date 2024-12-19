@@ -72,4 +72,10 @@ export class ProductService {
             currentPage,
         };
     };
+    deleteProduct = async (productId: string) => {
+        return await productModel.deleteOne({ _id: productId });
+    };
+    getProductsByIds = async (productIds: string[]) => {
+        return await productModel.find({ _id: { $in: productIds } });
+    };
 }
