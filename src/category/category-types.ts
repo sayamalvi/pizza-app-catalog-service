@@ -1,14 +1,15 @@
+import { Request } from 'express';
 export interface PriceConfiguration {
     [key: string]: {
         priceType: 'base' | 'additional';
-        avaliableOptions: string[];
+        availableOptions: string[];
     };
 }
 export interface Attribute {
     name: string;
     widgetType: 'switch' | 'radio';
     defaultValue: string;
-    avaliableOptions: string[];
+    availableOptions: string[];
 }
 export interface Category {
     name: string;
@@ -16,3 +17,25 @@ export interface Category {
     attributes: Attribute[];
 }
 
+export interface CreateCategoryRequest extends Request {
+    body: Category;
+}
+
+export interface GetCategoryByIdRequest extends Request {
+    params: {
+        id: string;
+    };
+}
+
+export interface UpdateCategoryRequest extends Request {
+    params: {
+        id: string;
+    };
+    body: Category;
+}
+
+export interface DeleteCategoryRequest extends Request {
+    params: {
+        id: string;
+    };
+}
