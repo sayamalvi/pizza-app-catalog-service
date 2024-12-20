@@ -166,7 +166,8 @@ export class ProductController {
             }
         }
         await this.storage.delete(product.image);
-        await this.productService.deleteProduct(productId);
-        res.sendStatus(204);
+        const deletedProductRes =
+            await this.productService.deleteProduct(productId);
+        res.json({ id: deletedProductRes });
     };
 }
