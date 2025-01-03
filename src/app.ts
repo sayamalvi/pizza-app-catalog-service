@@ -1,10 +1,12 @@
 import config from 'config';
 import express, { Request, Response } from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+
 import { globalErrorHandler } from './common/middlewares/globalErrorHandler';
 import categoryRouter from './category/category-router';
-import cookieParser from 'cookie-parser';
 import productRouter from './product/product-router';
-import cors from 'cors';
+import toppingRouter from './topping/topping-router';
 
 const app = express();
 const ALLOWED_DOMAINS = [
@@ -27,6 +29,7 @@ app.use(cookieParser());
 
 app.use('/categories', categoryRouter);
 app.use('/products', productRouter);
+app.use('/toppings', toppingRouter);
 
 app.use(globalErrorHandler);
 
