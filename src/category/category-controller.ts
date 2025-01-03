@@ -13,9 +13,9 @@ import {
 export class CategoryController {
     constructor(
         private readonly categoryService: CategoryService,
-        private logger: Logger,
+        private readonly logger: Logger,
     ) {}
-    
+
     create = async (
         req: CreateCategoryRequest,
         res: Response,
@@ -25,11 +25,12 @@ export class CategoryController {
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
-        const { name, priceConfiguration, attributes } = req.body;
+        const { name, priceConfiguration, attributes, hasToppings } = req.body;
         const category = await this.categoryService.create({
             name,
             priceConfiguration,
             attributes,
+            hasToppings,
         });
         this.logger.info('Category created:', { id: category._id });
         res.json({ id: category._id });
@@ -63,11 +64,12 @@ export class CategoryController {
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
-        const { name, priceConfiguration, attributes } = req.body;
+        const { name, priceConfiguration, attributes, hasToppings } = req.body;
         const category = await this.categoryService.update(id, {
             name,
             priceConfiguration,
             attributes,
+            hasToppings,
         });
         if (!category) {
             return next(createHttpError(404, 'Category not found'));

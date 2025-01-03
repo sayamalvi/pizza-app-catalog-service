@@ -15,6 +15,7 @@ export interface Category {
     name: string;
     priceConfiguration: PriceConfiguration;
     attributes: Attribute[];
+    hasToppings: boolean;
 }
 
 export interface CreateCategoryRequest extends Request {
