@@ -14,11 +14,13 @@ import { FileStorage } from '../common/types/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { ROLES } from '../common/enums';
 import mongoose from 'mongoose';
+import { MessageProducerBroker } from '../common/types/broker';
 
 export class ProductController {
     constructor(
         private readonly productService: ProductService,
         private readonly storage: FileStorage,
+        private readonly broker: MessageProducerBroker,
     ) {}
 
     create = async (
@@ -43,7 +45,14 @@ export class ProductController {
             attributes: JSON.parse(req.body.attributes),
             image: imageName,
         });
-        res.status(201).json({ id: product.id });
+        // send product to kafka
+        // todo: move topic name to config
+        await this.broker.sendMessage(
+            'product',
+            JSON.stringify({ id: product._id }),
+        );
+
+        res.status(201).json({ id: product._id });
     };
 
     update = async (
@@ -83,6 +92,13 @@ export class ProductController {
                 attributes: JSON.parse(req.body.attributes),
                 image: imageName ?? (oldImage as string),
             },
+        );
+        await this.broker.sendMessage(
+            'product',
+            JSON.stringify({
+                id: updatedProduct?._id,
+                priceConfiguration: updatedProduct?.priceConfiguration,
+            }),
         );
         res.json({ id: updatedProduct?.id });
     };

@@ -10,12 +10,17 @@ import { ProductService } from './product-service';
 import fileUpload from 'express-fileupload';
 import { S3Storage } from '../common/services/S3Storage';
 import createHttpError from 'http-errors';
+import { createMessageProducerBroker } from '../common/factories/broker-factory';
 
 const router = express.Router();
 const productService = new ProductService();
 const s3Storage = new S3Storage();
-
-const productController = new ProductController(productService, s3Storage);
+const broker = createMessageProducerBroker();
+const productController = new ProductController(
+    productService,
+    s3Storage,
+    broker,
+);
 router.post(
     '/',
     authenticate,
