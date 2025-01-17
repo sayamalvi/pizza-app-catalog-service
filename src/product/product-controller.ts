@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ROLES } from '../common/enums';
 import mongoose from 'mongoose';
 import { MessageProducerBroker } from '../common/types/broker';
+import { mapToObject } from '../utils';
 
 export class ProductController {
     constructor(
@@ -49,7 +50,16 @@ export class ProductController {
         // todo: move topic name to config
         await this.broker.sendMessage(
             'product',
-            JSON.stringify({ id: product._id }),
+            JSON.stringify({
+                id: product?._id,
+                priceConfiguration: mapToObject(
+                    // fix: typescript errors
+                    product?.priceConfiguration as unknown as Map<
+                        string,
+                        unknown
+                    >,
+                ),
+            }),
         );
 
         res.status(201).json({ id: product._id });
@@ -97,7 +107,12 @@ export class ProductController {
             'product',
             JSON.stringify({
                 id: updatedProduct?._id,
-                priceConfiguration: updatedProduct?.priceConfiguration,
+                priceConfiguration: mapToObject(
+                    updatedProduct?.priceConfiguration as unknown as Map<
+                        string,
+                        unknown
+                    >,
+                ),
             }),
         );
         res.json({ id: updatedProduct?.id });

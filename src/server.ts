@@ -2,7 +2,6 @@ import app from './app';
 import logger from './config/logger';
 import config from 'config';
 import { initDB } from './config/db';
-import { KafkaProducerBroker } from './config/kafka';
 import { MessageProducerBroker } from './common/types/broker';
 import { createMessageProducerBroker } from './common/factories/broker-factory';
 

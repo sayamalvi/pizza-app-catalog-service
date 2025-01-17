@@ -32,7 +32,7 @@ export default tseslint.config(
         rules: {
             '@typescript-eslint/no-misused-promises': 'off',
             '@typescript-eslint/no-unused-vars': 'warn',
-            'no-console': 'error',
+            'no-console': 'warn',
             'dot-notation': 'error',
             '@typescript-eslint/require-await': 'off',
             '@typescript-eslint/no-unsafe-assignment': 'off',
